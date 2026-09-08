@@ -1,12 +1,12 @@
 const express = require('express');
 const session = require('express-session');
 const MemoryStore = require('memorystore')(session);
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const USERS_FILE = path.join(__dirname, 'users.json');
 
 // Middleware
 app.use(express.json());
@@ -23,83 +23,67 @@ app.use(session({
   secret: 'radar-command-center-secret-key'
 }));
 
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Google OAuth Strategy
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_GOOGLE_CLIENT_SECRET',
+    callbackURL: "https://security-database-kw44.onrender.com/api/auth/google/callback"
+  },
+  (accessToken, refreshToken, profile, done) => {
+    // Return user profile directly without saving to disk
+    return done(null, profile);
+  }
+));
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
+
 // Serve static assets from public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Helper function to read users
-function getUsers() {
-  if (!fs.existsSync(USERS_FILE)) {
-    fs.writeFileSync(USERS_FILE, JSON.stringify([]));
-    return [];
+// --- Google Auth Endpoints ---
+
+app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/api/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/admin-login.html' }),
+  (req, res) => {
+    // Successful login redirects straight to dashboard
+    res.redirect('/Dashboard.html');
   }
-  try {
-    const data = fs.readFileSync(USERS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    return [];
-  }
-}
-
-// Helper function to save users
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
-
-// --- Auth Endpoints ---
-
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  const users = getUsers();
-  const user = users.find(u => u.username === username && u.password === password);
-
-  if (user) {
-    req.session.user = { username: user.username };
-    return res.json({ success: true, message: 'Login successful' });
-  }
-  
-  return res.status(401).json({ success: false, message: 'Invalid credentials' });
-});
+);
 
 app.post('/api/logout', (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      return res.status(500).json({ success: false, message: 'Logout failed' });
-    }
+  req.logout((err) => {
+    if (err) return res.status(500).json({ success: false });
+    req.session.destroy();
     res.clearCookie('connect.sid');
-    return res.json({ success: true, message: 'Logged out' });
+    return res.json({ success: true });
   });
 });
 
 app.get('/api/check-auth', (req, res) => {
-  if (req.session && req.session.user) {
-    return res.json({ authenticated: true, user: req.session.user });
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return res.json({ authenticated: true, user: req.user });
   }
   return res.json({ authenticated: false });
 });
 
-// --- Explicit HTML Page Routes ---
+// --- Explicit Page Routes ---
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/admin-login', (req, res) => {
+app.get(['/admin-login', '/admin-login.html', '/login.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
 });
 
-app.get('/admin-login.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
-});
-
-app.get('/login.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
-});
-
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'Dashboard.html'));
-});
-
-app.get('/Dashboard.html', (req, res) => {
+app.get(['/dashboard', '/Dashboard.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Dashboard.html'));
 });
 
