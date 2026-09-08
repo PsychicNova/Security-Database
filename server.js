@@ -122,6 +122,23 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 // Start Server
+const path = require('path');
+
+// Universal Dashboard Route (Handles lowercase and capitalized requests)
+app.get(['/dashboard.html', '/Dashboard.html', '/dashboard'], (req, res) => {
+  // Checks for lowercase dashboard.html first, falls back to Dashboard.html
+  const fs = require('fs');
+  const lowerPath = path.join(__dirname, 'public', 'dashboard.html');
+  const upperPath = path.join(__dirname, 'public', 'Dashboard.html');
+
+  if (fs.existsSync(lowerPath)) {
+    res.sendFile(lowerPath);
+  } else if (fs.existsSync(upperPath)) {
+    res.sendFile(upperPath);
+  } else {
+    res.status(404).send('Dashboard HTML file missing from public folder.');
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
