@@ -232,7 +232,7 @@
     </form>
 
     <div class="footer-text">
-      Don't have access? <a href="#">Create account</a>
+      Don't have access? <a href="#" id="createAccountBtn">Create account</a>
     </div>
   </div>
 
@@ -257,6 +257,11 @@
       } catch (err) {
         alert('An error occurred during sign in.');
       }
+    });
+
+    document.getElementById('createAccountBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Account creation is restricted. Please sign in using your authorized Google Account.');
     });
   </script>
 
