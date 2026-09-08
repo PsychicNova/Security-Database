@@ -4,14 +4,13 @@ const fs = require('fs');
 
 const app = express();
 
-// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve all static assets from the 'public' directory
+// Serve static assets from public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Helper function to send files regardless of casing
+// Helper function to locate files case-insensitively
 const sendPublicFile = (res, targetFileName) => {
   const publicDir = path.join(__dirname, 'public');
   
@@ -29,35 +28,31 @@ const sendPublicFile = (res, targetFileName) => {
   return res.status(404).send(`${targetFileName} not found in public folder.`);
 };
 
-// Root route - Redirect to admin-login.html
+// Routes
 app.get('/', (req, res) => {
   sendPublicFile(res, 'admin-login.html');
 });
 
-// Explicit route for Admin Login page
 app.get(['/admin-login', '/admin-login.html', '/Admin-login.html'], (req, res) => {
   sendPublicFile(res, 'admin-login.html');
 });
 
-// Explicit route for Dashboard page
 app.get(['/dashboard', '/dashboard.html', '/Dashboard.html'], (req, res) => {
-  sendPublicFile(res, 'dashboard.html');
+  sendPublicFile(res, 'Dashboard.html');
 });
 
-// Authentication endpoint for form submission
+// Authentication endpoint
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
   if (username === 'admin' && password === 'admin123') {
-    // If request comes from standard HTML form submit, redirect directly
     if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
-      return res.redirect('/dashboard.html');
+      return res.redirect('/Dashboard.html');
     }
-    // If request comes from fetch/AJAX, return JSON status
-    return res.status(200).json({ success: true, redirect: '/dashboard.html' });
+    return res.status(200).json({ success: true, redirect: '/Dashboard.html', message: 'Login successful' });
   }
 
-  return res.status(401).send('Invalid Credentials. <a href="/admin-login.html">Try again</a>');
+  return res.status(401).json({ success: false, message: 'Invalid username or password' });
 });
 
 const PORT = process.env.PORT || 10000;
