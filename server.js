@@ -112,7 +112,15 @@ app.get('/api/admin/status', (req, res) => {
 
   res.json({ activeUsers: sessionList });
 });
+// Serve Dashboard Page
+app.get('/dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
 
+// Optional fallback route if your script redirects to /dashboard
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
