@@ -29,14 +29,14 @@ const sendPublicFile = (res, targetFileName) => {
   return res.status(404).send(`${targetFileName} not found in public folder.`);
 };
 
-// Root route - Redirect to Admin Login
+// Root route - Redirect to admin-login.html
 app.get('/', (req, res) => {
-  sendPublicFile(res, 'Admin-login.html');
+  sendPublicFile(res, 'admin-login.html');
 });
 
 // Explicit route for Admin Login page
 app.get(['/admin-login', '/admin-login.html', '/Admin-login.html'], (req, res) => {
-  sendPublicFile(res, 'Admin-login.html');
+  sendPublicFile(res, 'admin-login.html');
 });
 
 // Explicit route for Dashboard page
@@ -51,13 +51,13 @@ app.post('/login', (req, res) => {
   if (username === 'admin' && password === 'admin123') {
     // If request comes from standard HTML form submit, redirect directly
     if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
-      return res.redirect('/dashboard');
+      return res.redirect('/dashboard.html');
     }
     // If request comes from fetch/AJAX, return JSON status
-    return res.status(200).json({ success: true, redirect: '/dashboard' });
+    return res.status(200).json({ success: true, redirect: '/dashboard.html' });
   }
 
-  return res.status(401).send('Invalid Credentials. <a href="/admin-login">Try again</a>');
+  return res.status(401).send('Invalid Credentials. <a href="/admin-login.html">Try again</a>');
 });
 
 const PORT = process.env.PORT || 10000;
