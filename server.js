@@ -29,12 +29,11 @@ app.use(passport.session());
 
 // Google OAuth Strategy
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_GOOGLE_CLIENT_SECRET',
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "https://security-database-kw44.onrender.com/api/auth/google/callback"
   },
   (accessToken, refreshToken, profile, done) => {
-    // Return user profile directly without saving to disk
     return done(null, profile);
   }
 ));
