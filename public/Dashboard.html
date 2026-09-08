@@ -10,14 +10,18 @@
   <style>
     :root {
       --bg-dark: #07090e;
-      --card-bg: #111622;
-      --card-border: rgba(255, 255, 255, 0.06);
-      --input-bg: #161c2d;
+      --card-bg: rgba(18, 22, 31, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --input-bg: rgba(10, 13, 20, 0.6);
+      --accent-blue: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.25);
       --accent-green: #10b981;
-      --accent-green-glow: rgba(16, 185, 129, 0.15);
-      --text-primary: #ffffff;
-      --text-secondary: #8a99ad;
-      --text-muted: #56657a;
+      --accent-green-glow: rgba(16, 185, 129, 0.25);
+      --accent-red: #f43f5e;
+      --accent-red-glow: rgba(244, 63, 94, 0.25);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
     }
 
     * {
@@ -33,48 +37,72 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
     }
 
-    /* Header */
+    /* Background Ambiance */
+    .ambient-glow-1 {
+      position: fixed;
+      top: -15%;
+      left: -10%;
+      width: 45vw;
+      height: 45vw;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-2 {
+      position: fixed;
+      bottom: -15%;
+      right: -10%;
+      width: 45vw;
+      height: 45vw;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.07) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Navbar Header */
     header {
+      position: relative;
+      z-index: 10;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 24px 40px;
-      background: var(--bg-dark);
+      padding: 20px 32px;
+      background: rgba(10, 13, 20, 0.8);
+      backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--card-border);
     }
 
     .nav-brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
     .brand-icon {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-weight: 700;
-      font-size: 1.1rem;
-      box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+      box-shadow: 0 0 15px var(--accent-glow);
     }
 
     .brand-title {
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 700;
       letter-spacing: -0.01em;
     }
 
     .brand-subtitle {
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       color: var(--text-secondary);
-      margin-top: 2px;
     }
 
     .nav-actions {
@@ -87,9 +115,9 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(16, 185, 129, 0.08);
+      background: rgba(16, 185, 129, 0.1);
       border: 1px solid rgba(16, 185, 129, 0.2);
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.75rem;
       font-weight: 600;
@@ -115,9 +143,9 @@
       background: var(--input-bg);
       border: 1px solid var(--card-border);
       color: var(--text-secondary);
-      padding: 7px 16px;
+      padding: 8px 16px;
       border-radius: 8px;
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -125,189 +153,261 @@
     }
 
     .btn-logout:hover {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: rgba(239, 68, 68, 0.3);
-      color: #ef4444;
+      background: rgba(244, 63, 94, 0.1);
+      border-color: rgba(244, 63, 94, 0.3);
+      color: var(--accent-red);
     }
 
-    /* Main Container */
+    /* Main Dashboard Layout */
     main {
-      max-width: 1440px;
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      max-width: 1400px;
       width: 100%;
-      margin: 32px auto;
-      padding: 0 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .dashboard-grid {
+      margin: 0 auto;
+      padding: 32px;
       display: grid;
-      grid-template-columns: 1.8fr 1fr;
+      grid-template-columns: repeat(12, 1fr);
       gap: 24px;
-    }
-
-    @media (max-width: 1024px) {
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
     }
 
     .dashboard-card {
       background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 32px;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
     }
 
-    .card-header-row {
+    /* Presence Hero Card (Col 1-8) */
+    .presence-hero {
+      grid-column: span 8;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (max-width: 1024px) {
+      .presence-hero { grid-column: span 12; }
+    }
+
+    .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
 
     .card-title {
-      font-size: 0.7rem;
-      font-weight: 700;
+      font-size: 0.9rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
     }
 
-    .card-subtitle-tag {
-      font-size: 0.72rem;
+    .sensor-id {
+      font-size: 0.8rem;
       color: var(--text-muted);
-      font-weight: 500;
+      background: var(--input-bg);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
     }
 
-    /* Primary Sensor Zone Layout */
-    .sensor-main-display {
+    .presence-display {
       display: flex;
       align-items: center;
       gap: 24px;
-      margin-bottom: 36px;
+      margin: 20px 0;
     }
 
     .presence-indicator-ring {
-      width: 76px;
-      height: 76px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      box-shadow: 0 0 25px var(--accent-green-glow);
-      flex-shrink: 0;
+      background: rgba(16, 185, 129, 0.1);
+      border: 2px solid rgba(16, 185, 129, 0.3);
+      box-shadow: 0 0 30px var(--accent-green-glow);
+      transition: all 0.3s ease;
+    }
+
+    .presence-indicator-ring.clear {
+      background: rgba(100, 116, 139, 0.1);
+      border-color: rgba(100, 116, 139, 0.2);
+      box-shadow: none;
     }
 
     .presence-indicator-ring svg {
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       fill: var(--accent-green);
     }
 
+    .presence-indicator-ring.clear svg {
+      fill: var(--text-muted);
+    }
+
     .presence-info h2 {
-      font-size: 1.7rem;
+      font-size: 2.2rem;
       font-weight: 700;
       letter-spacing: -0.02em;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .presence-info p {
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       color: var(--text-secondary);
     }
 
-    /* 3 Sub-Metrics Grid */
-    .metrics-row {
+    /* Telemetry Grid inside Hero */
+    .telemetry-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--card-border);
     }
 
-    .metric-box {
+    @media (max-width: 768px) {
+      .telemetry-grid { grid-template-columns: 1fr; }
+    }
+
+    .telemetric-box {
       background: var(--input-bg);
       border: 1px solid var(--card-border);
-      padding: 20px;
       border-radius: 12px;
+      padding: 16px;
     }
 
-    .metric-box span {
+    .telemetric-box span {
       display: block;
+      font-size: 0.75rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      font-size: 0.65rem;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
     }
 
-    .metric-box strong {
+    .telemetric-box strong {
+      font-size: 1.25rem;
+      font-weight: 600;
       color: var(--text-primary);
-      font-weight: 700;
-      font-size: 1.15rem;
     }
 
-    /* Activity Feed */
-    .activity-feed-list {
+    /* Sidebar Widgets (Col 9-12) */
+    .sidebar-widget {
+      grid-column: span 4;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar-widget { grid-column: span 12; }
+    }
+
+    /* Live Activity Log */
+    .log-container {
       display: flex;
       flex-direction: column;
       gap: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
     }
 
-    .activity-item {
+    .log-container::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .log-container::-webkit-scrollbar-thumb {
+      background: var(--card-border);
+      border-radius: 4px;
+    }
+
+    .log-item {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       background: var(--input-bg);
       border: 1px solid var(--card-border);
-      padding: 15px 18px;
+      padding: 12px 14px;
       border-radius: 10px;
-      font-size: 0.82rem;
+      font-size: 0.85rem;
     }
 
-    .activity-desc {
+    .log-event {
       display: flex;
       align-items: center;
       gap: 10px;
-      color: var(--text-primary);
       font-weight: 500;
     }
 
-    .activity-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--accent-green);
+    .log-dot {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
     }
 
-    .activity-time {
+    .log-dot.active { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+    .log-dot.idle { background: var(--text-muted); }
+
+    .log-time {
+      font-size: 0.75rem;
       color: var(--text-muted);
-      font-size: 0.72rem;
     }
 
-    /* Bottom System Details Row */
-    .system-details-row {
+    /* System Diagnostic Stats */
+    .diagnostic-card {
+      grid-column: span 12;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      gap: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
     }
 
-    @media (max-width: 900px) {
-      .system-details-row {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    @media (max-width: 768px) {
+      .diagnostic-card { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .diag-item h4 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .diag-item p {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
     }
   </style>
 </head>
 <body>
 
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
   <!-- Header -->
   <header>
     <div class="nav-brand">
-      <div class="brand-icon">$</div>
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
       <div>
         <div class="brand-title">Security Command</div>
         <div class="brand-subtitle">ESP12E Radar Link Active</div>
@@ -321,86 +421,118 @@
     </div>
   </header>
 
-  <!-- Main Grid Layout -->
+  <!-- Main Content Grid -->
   <main>
-    <div class="dashboard-grid">
-      <!-- Primary Sensor Zone -->
-      <div class="dashboard-card">
-        <div class="card-header-row">
-          <span class="card-title">Primary Sensor Zone</span>
-          <span class="card-subtitle-tag">HLK-LD2410B Node #1</span>
-        </div>
+    <!-- Presence Hero Widget -->
+    <div class="dashboard-card presence-hero">
+      <div class="card-header">
+        <span class="card-title">Primary Sensor Zone</span>
+        <span class="sensor-id">HLK-LD2410B Node #1</span>
+      </div>
 
-        <div class="sensor-main-display">
-          <div class="presence-indicator-ring" id="ringIndicator">
-            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8m1-13h-2v6h6v-2h-4z"/></svg>
-          </div>
-          <div class="presence-info">
-            <h2 id="presenceStatusText">Presence Detected</h2>
-            <p id="presenceSubText">Human target identified in zone bounds</p>
-          </div>
+      <div class="presence-display">
+        <div class="presence-indicator-ring" id="ringIndicator">
+          <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8m1-13h-2v6h6v-2h-4z"/></svg>
         </div>
-
-        <div class="metrics-row">
-          <div class="metric-box">
-            <span>Target Distance</span>
-            <strong id="targetDistance">1.8 Meters</strong>
-          </div>
-          <div class="metric-box">
-            <span>Motion Energy</span>
-            <strong id="motionEnergy">78%</strong>
-          </div>
-          <div class="metric-box">
-            <span>Stationary Energy</span>
-            <strong id="stationaryEnergy">45%</strong>
-          </div>
+        <div class="presence-info">
+          <h2 id="presenceStatusText">Presence Detected</h2>
+          <p id="presenceSubText">Human target identified in zone bounds</p>
         </div>
       </div>
 
-      <!-- Activity Feed -->
-      <div class="dashboard-card">
-        <div class="card-header-row">
-          <span class="card-title">Activity Feed</span>
-          <span class="card-subtitle-tag">Real-time</span>
+      <div class="telemetry-grid">
+        <div class="telemetric-box">
+          <span>Target Distance</span>
+          <strong id="targetDistance">1.8 Meters</strong>
         </div>
-
-        <div class="activity-feed-list">
-          <div class="activity-item">
-            <div class="activity-desc"><span class="activity-dot"></span> Motion triggered</div>
-            <span class="activity-time">Just now</span>
-          </div>
-          <div class="activity-item">
-            <div class="activity-desc"><span class="activity-dot" style="background:var(--text-muted)"></span> Zone clear</div>
-            <span class="activity-time">2m ago</span>
-          </div>
-          <div class="activity-item">
-            <div class="activity-desc"><span class="activity-dot"></span> Presence verified</div>
-            <span class="activity-time">5m ago</span>
-          </div>
+        <div class="telemetric-box">
+          <span>Motion Energy</span>
+          <strong id="motionEnergy">78%</strong>
+        </div>
+        <div class="telemetric-box">
+          <span>Stationary Energy</span>
+          <strong id="stationaryEnergy">45%</strong>
         </div>
       </div>
     </div>
 
-    <!-- Bottom System Details Row -->
-    <div class="system-details-row">
-      <div class="dashboard-card metric-box">
-        <span>Microcontroller</span>
-        <strong>ESP12E (ESP8266)</strong>
+    <!-- Live Activity Log Sidebar -->
+    <div class="dashboard-card sidebar-widget">
+      <div class="card-header">
+        <span class="card-title">Activity Feed</span>
+        <span class="sensor-id">Real-time</span>
       </div>
-      <div class="dashboard-card metric-box">
-        <span>Sensor Protocol</span>
-        <strong>UART / HLK-LD2410B</strong>
+      <div class="log-container" id="logContainer">
+        <div class="log-item">
+          <div class="log-event">
+            <span class="log-dot active"></span> Motion triggered
+          </div>
+          <span class="log-time">Just now</span>
+        </div>
+        <div class="log-item">
+          <div class="log-event">
+            <span class="log-dot idle"></span> Zone clear
+          </div>
+          <span class="log-time">2m ago</span>
+        </div>
+        <div class="log-item">
+          <div class="log-event">
+            <span class="log-dot active"></span> Presence verified
+          </div>
+          <span class="log-time">5m ago</span>
+        </div>
       </div>
-      <div class="dashboard-card metric-box">
-        <span>Wi-Fi Signal (RSSI)</span>
-        <strong>-64 dBm (Stable)</strong>
+    </div>
+
+    <!-- System Diagnostics Bar -->
+    <div class="diagnostic-card">
+      <div class="diag-item">
+        <h4>Microcontroller</h4>
+        <p>ESP12E (ESP8266)</p>
       </div>
-      <div class="dashboard-card metric-box">
-        <span>System Uptime</span>
-        <strong>4h 22m 10s</strong>
+      <div class="diag-item">
+        <h4>Sensor Protocol</h4>
+        <p>UART / HLK-LD2410B</p>
+      </div>
+      <div class="diag-item">
+        <h4>Wi-Fi Signal (RSSI)</h4>
+        <p>-64 dBm (Stable)</p>
+      </div>
+      <div class="diag-item">
+        <h4>System Uptime</h4>
+        <p>4h 22m 10s</p>
       </div>
     </div>
   </main>
+
+  <script>
+    // Frontend telemetry simulation hook (Will sync when ESP12E sends POST data)
+    function updateSensorState(data) {
+      const ring = document.getElementById('ringIndicator');
+      const statusText = document.getElementById('presenceStatusText');
+      const subText = document.getElementById('presenceSubText');
+      const distance = document.getElementById('targetDistance');
+      const motion = document.getElementById('motionEnergy');
+      const stationary = document.getElementById('stationaryEnergy');
+
+      if (data.presence) {
+        ring.classList.remove('clear');
+        statusText.innerText = 'Presence Detected';
+        subText.innerText = 'Human target identified in zone bounds';
+      } else {
+        ring.classList.add('clear');
+        statusText.innerText = 'Zone Clear';
+        subText.innerText = 'No target movement detected';
+      }
+
+      if (data.distance) distance.innerText = data.distance + ' Meters';
+      if (data.motion) motion.innerText = data.motion + '%';
+      if (data.stationary) stationary.innerText = data.stationary + '%';
+    }
+
+    // Example automatic simulation ticker (can be replaced with fetch or websockets)
+    // setInterval(() => { ... }, 5000);
+  </script>
 
 </body>
 </html>
