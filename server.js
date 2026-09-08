@@ -1,12 +1,43 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const app = express();
 
 // Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Express Session Configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'security-database-secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
+
+// Google OAuth Strategy Setup
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+
+passport.use(new GoogleStrategy({
+    clientID: GOOGLE_CLIENT_ID,
+    clientSecret: GOOGLE_CLIENT_SECRET,
+    callbackURL: "https://security-database-kw44.onrender.com/auth/google/callback"
+  },
+  (accessToken, refreshToken, profile, done) => {
+    return done(null, profile);
+  }
+));
 
 // Serve static assets from public directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,30 +70,35 @@ app.get(['/admin-login', '/admin-login.html', '/Admin-login.html'], (req, res) =
   sendPublicFile(res, 'admin-login.html');
 });
 
-// Explicit routes for dashboard page (handles any casing)
+// Explicit routes for dashboard page
 app.get(['/dashboard', '/dashboard.html', '/Dashboard.html'], (req, res) => {
-  sendPublicFile(res, 'dashboard.html');
+  sendPublicFile(res, 'Dashboard.html');
 });
 
-// Authentication endpoint
+// Google OAuth Routes
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/admin-login.html' }),
+  (req, res) => {
+    res.redirect('/Dashboard.html');
+  }
+);
+
+// Standard Authentication Endpoints
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
   if (username === 'admin' && password === 'admin123') {
-    // Standard HTML form submission redirect
     if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
-      return res.redirect('/dashboard');
+      return res.redirect('/Dashboard.html');
     }
-    // Fetch/AJAX JSON response
-    return res.status(200).json({ success: true, redirect: '/dashboard', message: 'Login successful' });
+    return res.status(200).json({ success: true, redirect: '/Dashboard.html', message: 'Login successful' });
   }
 
   return res.status(401).json({ success: false, message: 'Invalid username or password' });
 });
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-// Registration endpoint
 app.post('/register', (req, res) => {
   const { username, password } = req.body;
 
@@ -70,10 +106,12 @@ app.post('/register', (req, res) => {
     return res.status(400).json({ success: false, message: 'Username and password required.' });
   }
 
-  // Account creation succeeds and redirects to dashboard
   return res.status(200).json({ 
     success: true, 
     redirect: '/Dashboard.html', 
     message: 'Account created successfully!' 
   });
 });
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
