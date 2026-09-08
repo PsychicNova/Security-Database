@@ -112,15 +112,6 @@ app.post('/login', (req, res) => {
   }
 });
 
-// Case-insensitive static file routing fallback
-app.get('/*', (req, res, next) => {
-  const filePath = path.join(__dirname, 'public', req.path);
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    next();
-  }
-});
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
