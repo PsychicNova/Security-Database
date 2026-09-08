@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="dashboard-header">
+      <div>
+        <h1>Security Dashboard</h1>
+        <p class="summary-bar" id="summaryBar">
+          Total Entered: 0 | Total Exited: 0 | Currently Inside: 0
+        </p>
+      </div>
+      <button id="resetBtn" class="btn-reset">Reset All Logs</button>
+    </header>
+
+    <section class="card">
+      <h3>Currently Inside:</h3>
+      <div id="currentlyInsideContainer" class="badges-container">
+        <span class="text-muted">None</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Logs Table:</h3>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Person ID</th>
+              <th>Entry Position</th>
+              <th>Exit Position</th>
+              <th>Entry Time</th>
+              <th>Exit Time</th>
+              <th>Duration</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="logsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Last 5 Entries/Exits:</h3>
+      <ul id="recentList" class="recent-list"></ul>
+    </section>
+  </div>
+
+  <script>
+    function formatDuration(startTimeStr, endTimeStr) {
+      const start = new Date(startTimeStr);
+      const end = endTimeStr !== '-' ? new Date(endTimeStr) : new Date();
+      const diffMs = Math.floor((end - start) / 1000);
+      if (diffMs < 60) return `${diffMs} sec`;
+      const mins = Math.floor(diffMs / 60);
+      const secs = diffMs % 60;
+      return `${mins} min ${secs} sec`;
+    }
+
+    function formatDate(dateStr) {
+      if (dateStr === '-') return '-';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-GB') + ', ' + d.toLocaleTimeString('en-GB');
+    }
+
+    async function fetchLogs() {
+      try {
+        const res = await fetch('/api/logs');
+        const data = await res.json();
+
+        document.getElementById('summaryBar').textContent = 
+          `Total Entered: ${data.metrics.totalEntered} | Total Exited: ${data.metrics.totalExited} | Currently Inside: ${data.metrics.currentlyInsideCount}`;
+
+        const insideContainer = document.getElementById('currentlyInsideContainer');
+        insideContainer.innerHTML = '';
+        if (data.currentlyInside.length === 0) {
+          insideContainer.innerHTML = '<span class="text-muted">None</span>';
+        } else {
+          data.currentlyInside.forEach(item => {
+            const badge = document.createElement('span');
+            badge.className = 'inside-badge';
+            badge.textContent = `${item.personId} - ${formatDuration(item.entryTime, '-')}`;
+            insideContainer.appendChild(badge);
+          });
+        }
+
+        const tableBody = document.getElementById('logsTableBody');
+        tableBody.innerHTML = '';
+        data.logs.forEach(log => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${log.id}</td>
+            <td>${log.personId}</td>
+            <td>${log.entryPosition}</td>
+            <td>${log.exitPosition}</td>
+            <td>${formatDate(log.entryTime)}</td>
+            <td>${formatDate(log.exitTime)}</td>
+            <td>${formatDuration(log.entryTime, log.exitTime)}</td>
+            <td><span class="status-tag ${log.status.toLowerCase()}">${log.status}</span></td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        const recentList = document.getElementById('recentList');
+        recentList.innerHTML = '';
+        data.logs.slice(-5).reverse().forEach(log => {
+          const li = document.createElement('li');
+          const isExit = log.status === 'Exited';
+          li.textContent = `• ${log.personId} - ${isExit ? 'Exited at' : 'Inside at'} ${isExit ? formatDate(log.exitTime) : formatDate(log.entryTime)}`;
+          recentList.appendChild(li);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+      if (confirm('Reset all security logs?')) {
+        await fetch('/api/logs', { method: 'DELETE' });
+        fetchLogs();
+      }
+    });
+
+    setInterval(fetchLogs, 2000);
+    fetchLogs();
+  </script>
+</body>
+</html>

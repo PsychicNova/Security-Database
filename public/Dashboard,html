@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Security Dashboard</title>
+  <link rel="stylesheet" href="style.css"> <!-- Uses your existing styling if present -->
+  <style>
+    body { font-family: Arial, sans-serif; background: #1e1e2f; color: #fff; padding: 20px; }
+    h1 { border-bottom: 2px solid #e14eca; padding-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #27293d; border-radius: 8px; overflow: hidden; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #3d3f56; }
+    th { background: #1d1e2c; }
+    .status-normal { color: #00f2c3; font-weight: bold; }
+    .status-alert { color: #ff8d72; font-weight: bold; background: #ff8d7222; animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: 0.5; } }
+  </style>
+</head>
+<body>
+
+  <h1>Live Security Presence Dashboard</h1>
+  <p>Auto-refreshing presence duration logs every 5 seconds.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Zone</th>
+        <th>Duration (Minutes)</th>
+        <th>Alert Status</th>
+      </tr>
+    </thead>
+    <tbody id="userTable">
+      <tr><td colspan="4">Loading active users...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/admin/status');
+        const data = await res.json();
+        const tbody = document.getElementById('userTable');
+        tbody.innerHTML = '';
+
+        if (data.activeUsers.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4">No active users detected in room.</td></tr>';
+          return;
+        }
+
+        data.activeUsers.forEach(user => {
+          const row = document.createElement('tr');
+          const isAlert = user.alertTriggered;
+
+          row.innerHTML = `
+            <td>${user.personId}</td>
+            <td>${user.position}</td>
+            <td>${user.durationMinutes} mins</td>
+            <td class="${isAlert ? 'status-alert' : 'status-normal'}">
+              ${isAlert ? '⚠️ OVERSTAY ALERT (>30 MINS)' : 'NORMAL'}
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Error updating dashboard:", err);
+      }
+    }
+
+    setInterval(fetchStatus, 5000);
+    fetchStatus();
+  </script>
+
+</body>
+</html>

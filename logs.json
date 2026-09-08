@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "personId": "user1",
+    "entryPosition": "door",
+    "exitPosition": "-",
+    "entryTime": "2026-09-04T06:54:58.264Z",
+    "exitTime": "-",
+    "status": "Inside"
+  }
+]
